@@ -85,7 +85,8 @@ export async function importRequirements(
 
   const deptMap = new Map((depts ?? []).map((d) => [d.code.toUpperCase(), d]));
   const itemMap = new Map((items ?? []).map((i) => [i.item_code.toUpperCase(), i]));
-  const vendorMap = new Map<string, (typeof vendors)[number]>();
+  type VendorRow = { id: string; vendor_code: string; vendor_name: string; user_id: string | null };
+  const vendorMap = new Map<string, VendorRow>();
   for (const v of vendors ?? []) {
     vendorMap.set(v.vendor_name.toUpperCase(), v);
     vendorMap.set(v.vendor_code.toUpperCase(), v);
