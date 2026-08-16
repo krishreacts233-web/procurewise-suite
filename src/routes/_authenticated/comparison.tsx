@@ -82,15 +82,15 @@ function ComparisonPage() {
     }
     return [...map.entries()].map(([key, rows]) => {
       const sorted = [...rows].sort((a, b) => Number(a.rate) - Number(b.rate));
-      const lowest = sorted.length ? Number(sorted[0].rate) : 0;
+      const lowest = sorted.length ? Number(sorted[0]?.rate ?? 0) : 0;
       return { key, rows: sorted, lowest, head: sorted[0] };
     });
   }, [filtered]);
 
   const totalSaving = groups.reduce((acc, g) => {
     if (g.rows.length < 2) return acc;
-    const highest = Number(g.rows[g.rows.length - 1].rate);
-    return acc + (highest - g.lowest) * Number(g.rows[0].quantity ?? 1);
+    const highest = Number(g.rows[g.rows.length - 1]?.rate ?? 0);
+    return acc + (highest - g.lowest) * Number(g.rows[0]?.quantity ?? 1);
   }, 0);
 
   return (
