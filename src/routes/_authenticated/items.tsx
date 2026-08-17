@@ -90,6 +90,13 @@ function ItemsPage() {
         title="Item Master"
         subtitle="Items are linked everywhere by ID, never by name alone."
         actions={
+          <div className="flex flex-wrap items-center gap-2">
+          <ExcelUpload
+            label="Upload items"
+            onTemplate={downloadItemTemplate}
+            onImport={importItems}
+            onDone={() => void qc.invalidateQueries({ queryKey: ["items"] })}
+          />
           <Dialog
             open={open}
             onOpenChange={(o) => {
