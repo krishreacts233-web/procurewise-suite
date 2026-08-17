@@ -158,6 +158,66 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_log: {
+        Row: {
+          channel: string
+          created_at: string
+          id: string
+          message: string | null
+          provider_response: string | null
+          recipient: string | null
+          requirement_id: string | null
+          retry_count: number
+          sent_at: string | null
+          status: string
+          updated_at: string
+          vendor_id: string | null
+        }
+        Insert: {
+          channel: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          provider_response?: string | null
+          recipient?: string | null
+          requirement_id?: string | null
+          retry_count?: number
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          provider_response?: string | null
+          recipient?: string | null
+          requirement_id?: string | null
+          retry_count?: number
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_log_requirement_id_fkey"
+            columns: ["requirement_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_requirements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_log_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -223,43 +283,55 @@ export type Database = {
           created_at: string
           created_by: string | null
           department_id: string
+          email_status: string
           id: string
           item_id: string
           quantity: number
           remarks: string | null
           required_date: string | null
+          requirement_no: string
+          sms_status: string
           status: string
           unit: string
           updated_at: string
           vendor_id: string | null
+          whatsapp_status: string
         }
         Insert: {
           created_at?: string
           created_by?: string | null
           department_id: string
+          email_status?: string
           id?: string
           item_id: string
           quantity?: number
           remarks?: string | null
           required_date?: string | null
+          requirement_no?: string
+          sms_status?: string
           status?: string
           unit?: string
           updated_at?: string
           vendor_id?: string | null
+          whatsapp_status?: string
         }
         Update: {
           created_at?: string
           created_by?: string | null
           department_id?: string
+          email_status?: string
           id?: string
           item_id?: string
           quantity?: number
           remarks?: string | null
           required_date?: string | null
+          requirement_no?: string
+          sms_status?: string
           status?: string
           unit?: string
           updated_at?: string
           vendor_id?: string | null
+          whatsapp_status?: string
         }
         Relationships: [
           {
@@ -415,6 +487,7 @@ export type Database = {
           user_id: string | null
           vendor_code: string
           vendor_name: string
+          whatsapp: string | null
         }
         Insert: {
           address?: string | null
@@ -432,6 +505,7 @@ export type Database = {
           user_id?: string | null
           vendor_code: string
           vendor_name: string
+          whatsapp?: string | null
         }
         Update: {
           address?: string | null
@@ -449,6 +523,7 @@ export type Database = {
           user_id?: string | null
           vendor_code?: string
           vendor_name?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
