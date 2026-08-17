@@ -16,6 +16,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { ExcelUpload } from "@/components/ExcelUpload";
+import { downloadItemTemplate, importItems } from "@/lib/upload";
 import { useItems, type Item } from "@/lib/queries";
 import { logAudit } from "@/lib/audit";
 import { useAuth } from "@/lib/auth";
