@@ -189,6 +189,7 @@ function VendorsPage() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         }
       />
 
