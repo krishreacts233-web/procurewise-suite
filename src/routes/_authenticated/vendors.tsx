@@ -23,6 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { ExcelUpload } from "@/components/ExcelUpload";
+import { downloadVendorTemplate, importVendors } from "@/lib/upload";
 import { useVendors, type Vendor } from "@/lib/queries";
 import { logAudit } from "@/lib/audit";
 import { useAuth } from "@/lib/auth";
@@ -132,6 +134,13 @@ function VendorsPage() {
         title="Vendor Master"
         subtitle="Vendors are linked to requirements and quotations by vendor ID."
         actions={
+          <div className="flex flex-wrap items-center gap-2">
+          <ExcelUpload
+            label="Upload vendors"
+            onTemplate={downloadVendorTemplate}
+            onImport={importVendors}
+            onDone={() => void qc.invalidateQueries({ queryKey: ["vendors"] })}
+          />
           <Dialog
             open={open}
             onOpenChange={(o) => {
@@ -180,6 +189,7 @@ function VendorsPage() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         }
       />
 

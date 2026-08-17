@@ -12,12 +12,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthenticatedApprovalsRouteImport } from './routes/_authenticated/approvals'
+import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedComparisonRouteImport } from './routes/_authenticated/comparison'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDepartmentsRouteImport } from './routes/_authenticated/departments'
 import { Route as AuthenticatedItemsRouteImport } from './routes/_authenticated/items'
 import { Route as AuthenticatedPurchaseRouteImport } from './routes/_authenticated/purchase'
 import { Route as AuthenticatedQuotationsRouteImport } from './routes/_authenticated/quotations'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedStatusRouteImport } from './routes/_authenticated/status'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedVendorsRouteImport } from './routes/_authenticated/vendors'
 
@@ -33,6 +36,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthenticatedApprovalsRoute = AuthenticatedApprovalsRouteImport.update({
   id: '/approvals',
   path: '/approvals',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedComparisonRoute = AuthenticatedComparisonRouteImport.update({
@@ -66,6 +74,16 @@ const AuthenticatedQuotationsRoute = AuthenticatedQuotationsRouteImport.update({
   path: '/quotations',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedStatusRoute = AuthenticatedStatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -80,24 +98,30 @@ const AuthenticatedVendorsRoute = AuthenticatedVendorsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
+  '/audit': typeof AuthenticatedAuditRoute
   '/comparison': typeof AuthenticatedComparisonRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/departments': typeof AuthenticatedDepartmentsRoute
   '/items': typeof AuthenticatedItemsRoute
   '/purchase': typeof AuthenticatedPurchaseRoute
   '/quotations': typeof AuthenticatedQuotationsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/status': typeof AuthenticatedStatusRoute
   '/users': typeof AuthenticatedUsersRoute
   '/vendors': typeof AuthenticatedVendorsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/approvals': typeof AuthenticatedApprovalsRoute
+  '/audit': typeof AuthenticatedAuditRoute
   '/comparison': typeof AuthenticatedComparisonRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/departments': typeof AuthenticatedDepartmentsRoute
   '/items': typeof AuthenticatedItemsRoute
   '/purchase': typeof AuthenticatedPurchaseRoute
   '/quotations': typeof AuthenticatedQuotationsRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/status': typeof AuthenticatedStatusRoute
   '/users': typeof AuthenticatedUsersRoute
   '/vendors': typeof AuthenticatedVendorsRoute
 }
@@ -106,12 +130,15 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_authenticated/approvals': typeof AuthenticatedApprovalsRoute
+  '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/comparison': typeof AuthenticatedComparisonRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/departments': typeof AuthenticatedDepartmentsRoute
   '/_authenticated/items': typeof AuthenticatedItemsRoute
   '/_authenticated/purchase': typeof AuthenticatedPurchaseRoute
   '/_authenticated/quotations': typeof AuthenticatedQuotationsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/status': typeof AuthenticatedStatusRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/vendors': typeof AuthenticatedVendorsRoute
 }
@@ -120,24 +147,30 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/approvals'
+    | '/audit'
     | '/comparison'
     | '/dashboard'
     | '/departments'
     | '/items'
     | '/purchase'
     | '/quotations'
+    | '/settings'
+    | '/status'
     | '/users'
     | '/vendors'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/approvals'
+    | '/audit'
     | '/comparison'
     | '/dashboard'
     | '/departments'
     | '/items'
     | '/purchase'
     | '/quotations'
+    | '/settings'
+    | '/status'
     | '/users'
     | '/vendors'
   id:
@@ -145,12 +178,15 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/_authenticated/approvals'
+    | '/_authenticated/audit'
     | '/_authenticated/comparison'
     | '/_authenticated/dashboard'
     | '/_authenticated/departments'
     | '/_authenticated/items'
     | '/_authenticated/purchase'
     | '/_authenticated/quotations'
+    | '/_authenticated/settings'
+    | '/_authenticated/status'
     | '/_authenticated/users'
     | '/_authenticated/vendors'
   fileRoutesById: FileRoutesById
@@ -181,6 +217,13 @@ declare module '@tanstack/react-router' {
       path: '/approvals'
       fullPath: '/approvals'
       preLoaderRoute: typeof AuthenticatedApprovalsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/audit': {
+      id: '/_authenticated/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AuthenticatedAuditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/comparison': {
@@ -225,6 +268,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedQuotationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/status': {
+      id: '/_authenticated/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof AuthenticatedStatusRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/users': {
       id: '/_authenticated/users'
       path: '/users'
@@ -244,24 +301,30 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedApprovalsRoute: typeof AuthenticatedApprovalsRoute
+  AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedComparisonRoute: typeof AuthenticatedComparisonRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDepartmentsRoute: typeof AuthenticatedDepartmentsRoute
   AuthenticatedItemsRoute: typeof AuthenticatedItemsRoute
   AuthenticatedPurchaseRoute: typeof AuthenticatedPurchaseRoute
   AuthenticatedQuotationsRoute: typeof AuthenticatedQuotationsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedStatusRoute: typeof AuthenticatedStatusRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedVendorsRoute: typeof AuthenticatedVendorsRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedApprovalsRoute: AuthenticatedApprovalsRoute,
+  AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedComparisonRoute: AuthenticatedComparisonRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDepartmentsRoute: AuthenticatedDepartmentsRoute,
   AuthenticatedItemsRoute: AuthenticatedItemsRoute,
   AuthenticatedPurchaseRoute: AuthenticatedPurchaseRoute,
   AuthenticatedQuotationsRoute: AuthenticatedQuotationsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedStatusRoute: AuthenticatedStatusRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedVendorsRoute: AuthenticatedVendorsRoute,
 }

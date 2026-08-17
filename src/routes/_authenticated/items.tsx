@@ -16,6 +16,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
+import { ExcelUpload } from "@/components/ExcelUpload";
+import { downloadItemTemplate, importItems } from "@/lib/upload";
 import { useItems, type Item } from "@/lib/queries";
 import { logAudit } from "@/lib/audit";
 import { useAuth } from "@/lib/auth";
@@ -88,6 +90,13 @@ function ItemsPage() {
         title="Item Master"
         subtitle="Items are linked everywhere by ID, never by name alone."
         actions={
+          <div className="flex flex-wrap items-center gap-2">
+          <ExcelUpload
+            label="Upload items"
+            onTemplate={downloadItemTemplate}
+            onImport={importItems}
+            onDone={() => void qc.invalidateQueries({ queryKey: ["items"] })}
+          />
           <Dialog
             open={open}
             onOpenChange={(o) => {
@@ -131,6 +140,7 @@ function ItemsPage() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         }
       />
 
