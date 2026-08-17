@@ -23,6 +23,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
+import { ExcelUpload } from "@/components/ExcelUpload";
+import { downloadVendorTemplate, importVendors } from "@/lib/upload";
 import { useVendors, type Vendor } from "@/lib/queries";
 import { logAudit } from "@/lib/audit";
 import { useAuth } from "@/lib/auth";
