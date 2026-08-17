@@ -208,3 +208,146 @@ export async function importRequirements(
 
   return result;
 }
+
+/* ---------------- Item master upload ---------------- */
+
+export function downloadItemTemplate() {
+  const rows = [
+    {
+      "Item Code": "SP-001",
+      "Item Name": "Bearing 6205",
+      Description: "Deep groove ball bearing",
+      Specification: "6205 ZZ",
+      Unit: "NOS",
+      Category: "Spares",
+      Status: "Active",
+    },
+  ];
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Items");
+  XLSX.writeFile(wb, "easybidding-item-master-template.xlsx");
+}
+
+export async function importItems(rows: Record<string, unknown>[]): Promise<UploadResult> {
+  const result: UploadResult = { inserted: 0, skipped: 0, errors: [] };
+  const { data: existing } = await supabase.from("items").select("id, item_code");
+  const codeMap = new Map((existing ?? []).map((i) => [i.item_code.toUpperCase(), i.id]));
+
+  for (const [index, raw] of rows.entries()) {
+    const line = index + 2;
+    const itemCode = pick(raw, ["Item Code", "ItemCode", "Code"]).toUpperCase();
+    const itemName = pick(raw, ["Item Name", "ItemName", "Item"]);
+    if (!itemCode && !itemName) {
+      result.skipped++;
+      continue;
+    }
+    const code = itemCode || itemName.toUpperCase();
+    const payload = {
+      item_code: code,
+      item_name: itemName || code,
+      description: pick(raw, ["Description"]) || null,
+      specification: pick(raw, ["Specification", "Spec"]) || null,
+      unit: pick(raw, ["Unit", "UOM"]) || "NOS",
+      category: pick(raw, ["Category"]) || null,
+      status: pick(raw, ["Status"]) || "Active",
+    };
+    const existingId = codeMap.get(code);
+    const { error } = existingId
+      ? await supabase.from("items").update(payload).eq("id", existingId)
+      : await supabase.from("items").insert(payload);
+    if (error) {
+      console.error("[ITEM] upload failed:", error.message);
+      result.errors.push(`Row ${line}: ${error.message}`);
+      result.skipped++;
+      continue;
+    }
+    result.inserted++;
+  }
+
+  await logAudit({
+    action: "Item Uploaded",
+    status: "Completed",
+    details: `${result.inserted} item(s) imported, ${result.skipped} skipped`,
+  });
+  return result;
+}
+
+/* ---------------- Vendor master upload ---------------- */
+
+export function downloadVendorTemplate() {
+  const rows = [
+    {
+      "Vendor Code": "V-001",
+      "Vendor Name": "ABC Bearings",
+      "Contact Person": "Ravi Kumar",
+      Mobile: "9876543210",
+      Email: "sales@abcbearings.com",
+      Address: "Chennai",
+      GST: "33ABCDE1234F1Z5",
+      PAN: "ABCDE1234F",
+      "Scope of Supply": "Bearings and spares",
+      Designation: "Manager",
+      "Sales Manager": "S. Iyer",
+      Status: "Active",
+    },
+  ];
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Vendors");
+  XLSX.writeFile(wb, "easybidding-vendor-master-template.xlsx");
+}
+
+export async function importVendors(rows: Record<string, unknown>[]): Promise<UploadResult> {
+  const result: UploadResult = { inserted: 0, skipped: 0, errors: [] };
+  const { data: existing } = await supabase.from("vendors").select("id, vendor_code");
+  const codeMap = new Map((existing ?? []).map((v) => [v.vendor_code.toUpperCase(), v.id]));
+
+  for (const [index, raw] of rows.entries()) {
+    const line = index + 2;
+    const vendorCode = pick(raw, ["Vendor Code", "VendorCode", "Vendor ID", "Code"]).toUpperCase();
+    const vendorName = pick(raw, ["Vendor Name", "VendorName", "Vendor"]);
+    if (!vendorCode && !vendorName) {
+      result.skipped++;
+      continue;
+    }
+    if (!vendorName) {
+      result.errors.push(`Row ${line}: missing vendor name`);
+      result.skipped++;
+      continue;
+    }
+    const code = vendorCode || vendorName.toUpperCase().replace(/\s+/g, "-").slice(0, 20);
+    const payload = {
+      vendor_code: code,
+      vendor_name: vendorName,
+      contact_person: pick(raw, ["Contact Person", "Contact"]) || null,
+      mobile: pick(raw, ["Mobile", "Phone"]) || null,
+      email: pick(raw, ["Email"]) || null,
+      address: pick(raw, ["Address"]) || null,
+      gst: pick(raw, ["GST", "GSTIN"]) || null,
+      pan: pick(raw, ["PAN"]) || null,
+      scope_of_supply: pick(raw, ["Scope of Supply", "Scope"]) || null,
+      designation: pick(raw, ["Designation"]) || null,
+      sales_manager: pick(raw, ["Sales Manager"]) || null,
+      status: pick(raw, ["Status"]) || "Active",
+    };
+    const existingId = codeMap.get(code);
+    const { error } = existingId
+      ? await supabase.from("vendors").update(payload).eq("id", existingId)
+      : await supabase.from("vendors").insert(payload);
+    if (error) {
+      console.error("[VENDOR] upload failed:", error.message);
+      result.errors.push(`Row ${line}: ${error.message}`);
+      result.skipped++;
+      continue;
+    }
+    result.inserted++;
+  }
+
+  await logAudit({
+    action: "Vendor Created",
+    status: "Completed",
+    details: `${result.inserted} vendor(s) imported, ${result.skipped} skipped`,
+  });
+  return result;
+}
