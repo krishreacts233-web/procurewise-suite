@@ -134,6 +134,13 @@ function VendorsPage() {
         title="Vendor Master"
         subtitle="Vendors are linked to requirements and quotations by vendor ID."
         actions={
+          <div className="flex flex-wrap items-center gap-2">
+          <ExcelUpload
+            label="Upload vendors"
+            onTemplate={downloadVendorTemplate}
+            onImport={importVendors}
+            onDone={() => void qc.invalidateQueries({ queryKey: ["vendors"] })}
+          />
           <Dialog
             open={open}
             onOpenChange={(o) => {
