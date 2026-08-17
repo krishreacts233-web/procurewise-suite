@@ -140,6 +140,7 @@ function ItemsPage() {
               </form>
             </DialogContent>
           </Dialog>
+          </div>
         }
       />
 
