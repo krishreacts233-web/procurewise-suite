@@ -111,12 +111,14 @@ export const sendRequirementAlerts = createServerFn({ method: "POST" })
         sent_at: outcome.status === "Sent" ? new Date().toISOString() : null,
       });
 
-      const column =
-        channel === "email" ? "email_status" : channel === "whatsapp" ? "whatsapp_status" : "sms_status";
-      await supabase
-        .from("purchase_requirements")
-        .update({ [column]: label })
-        .eq("id", req.id);
+      const patch =
+        channel === "email"
+          ? { email_status: label }
+          : channel === "whatsapp"
+            ? { whatsapp_status: label }
+            : { sms_status: label };
+      await supabase.from("purchase_requirements").update(patch).eq("id", req.id);
+
     }
 
     return { ok: results.some((r) => r.status === "Sent"), results };
