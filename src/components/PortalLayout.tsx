@@ -25,7 +25,7 @@ const NAV: NavItem[] = [
   { to: "/users", label: "Users", icon: Users, roles: ["super_admin"] },
   { to: "/departments", label: "Departments", icon: Building2, roles: ["super_admin", "purchase"] },
   { to: "/items", label: "Item Master", icon: Package, roles: ["super_admin", "purchase"] },
-  { to: "/vendors", label: "Vendor Master", icon: Truck, roles: ["super_admin", "purchase"] },
+  { to: "/vendors", label: "Vendor Master", icon: Truck, roles: ["super_admin"] },
   { to: "/purchase", label: "Purchase", icon: ShoppingCart, roles: ["super_admin", "purchase"] },
   { to: "/quotations", label: "Vendor Quotations", icon: FileText, roles: ["super_admin", "purchase", "vendor"] },
   { to: "/comparison", label: "Comparison Dashboard", icon: GitCompare, roles: ["super_admin", "purchase"] },
