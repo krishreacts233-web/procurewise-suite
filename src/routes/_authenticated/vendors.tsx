@@ -46,6 +46,7 @@ const EMPTY = {
   vendor_name: "",
   contact_person: "",
   mobile: "",
+  whatsapp: "",
   email: "",
   address: "",
   gst: "",
@@ -56,7 +57,7 @@ const EMPTY = {
 };
 
 function VendorsPage() {
-  const { isStaff, isSuperAdmin } = useAuth();
+  const { isSuperAdmin } = useAuth();
   const { data = [] } = useVendors();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -73,7 +74,8 @@ function VendorsPage() {
     },
   });
 
-  if (!isStaff) return <p className="text-sm text-muted-foreground">Not authorized.</p>;
+  if (!isSuperAdmin)
+    return <p className="text-sm text-muted-foreground">Vendor Master is restricted to Super Admin.</p>;
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -165,6 +167,7 @@ function VendorsPage() {
                     ["vendor_name", "Vendor Name", true],
                     ["contact_person", "Contact Person", false],
                     ["mobile", "Mobile", false],
+                    ["whatsapp", "WhatsApp Number", false],
                     ["email", "Email", false],
                     ["address", "Address", false],
                     ["gst", "GST", false],
@@ -217,7 +220,7 @@ function VendorsPage() {
                     {v.contact_person ?? "—"}
                     <br />
                     <span className="text-xs">
-                      {v.mobile ?? ""} {v.email ?? ""}
+                      {v.mobile ?? ""} {v.whatsapp ? `· WA ${v.whatsapp}` : ""} {v.email ?? ""}
                     </span>
                   </td>
                   <td className="text-xs text-muted-foreground">
@@ -258,6 +261,7 @@ function VendorsPage() {
                           vendor_name: v.vendor_name,
                           contact_person: v.contact_person ?? "",
                           mobile: v.mobile ?? "",
+                          whatsapp: v.whatsapp ?? "",
                           email: v.email ?? "",
                           address: v.address ?? "",
                           gst: v.gst ?? "",
