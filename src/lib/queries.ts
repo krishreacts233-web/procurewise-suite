@@ -33,9 +33,14 @@ export interface Vendor {
   sales_manager: string | null;
   status: string;
   user_id: string | null;
+  whatsapp: string | null;
 }
 export interface Requirement {
   id: string;
+  requirement_no: string;
+  email_status: string;
+  whatsapp_status: string;
+  sms_status: string;
   department_id: string;
   item_id: string;
   vendor_id: string | null;
@@ -48,6 +53,18 @@ export interface Requirement {
   departments: { code: string; name: string } | null;
   items: { item_code: string; item_name: string; specification: string | null } | null;
   vendors: { vendor_code: string; vendor_name: string } | null;
+}
+export interface NotificationLogRow {
+  id: string;
+  requirement_id: string | null;
+  vendor_id: string | null;
+  channel: string;
+  recipient: string | null;
+  message: string | null;
+  status: string;
+  provider_response: string | null;
+  sent_at: string | null;
+  created_at: string;
 }
 export interface Quotation {
   id: string;
@@ -195,4 +212,23 @@ export function statusTone(status: string) {
     default:
       return "bg-primary/15 text-primary border-primary/30";
   }
+}
+
+export function useNotificationLog(requirementIds: string[]) {
+  return useQuery({
+    queryKey: ["notification-log", requirementIds.join(",")],
+    enabled: requirementIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("notification_log")
+        .select("*")
+        .in("requirement_id", requirementIds)
+        .order("created_at", { ascending: false });
+      if (error) {
+        console.error("[NOTIFY LOG]", error.message);
+        throw error;
+      }
+      return data as unknown as NotificationLogRow[];
+    },
+  });
 }
