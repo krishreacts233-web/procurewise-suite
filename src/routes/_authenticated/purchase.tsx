@@ -38,7 +38,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { logAudit, notify } from "@/lib/audit";
 import { downloadTemplate, importRequirements, parseWorkbook } from "@/lib/upload";
-import { sendRequirementAlerts, type AlertChannel } from "@/lib/notify.functions";
+import { sendEnquiryAlerts, sendRequirementAlerts, type AlertChannel } from "@/lib/notify.functions";
 
 export const Route = createFileRoute("/_authenticated/purchase")({
   head: () => ({
@@ -91,6 +91,7 @@ function PurchasePage() {
   const { data: requirements = [] } = useRequirements();
   const { data: quotations = [] } = useQuotations();
   const sendAlerts = useServerFn(sendRequirementAlerts);
+  const sendGroupAlerts = useServerFn(sendEnquiryAlerts);
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
@@ -225,7 +226,7 @@ function PurchasePage() {
     if (vendorId) await alertVendor(data.id);
   }
 
-  async function assignVendor(reqId: string, vendorId: string) {
+  async function assignVendor(reqId: string, vendorId: string, skipAlert = false) {
     const { error } = await supabase
       .from("purchase_requirements")
       .update({
@@ -246,12 +247,33 @@ function PurchasePage() {
       await notify([vendor.user_id], "New material enquiry", "You have received a new enquiry.", "/dashboard");
     }
     await logAudit({ action: "Vendor Assigned", recordId: reqId, status: "Vendor Assigned" });
-    await alertVendor(reqId);
+    if (!skipAlert) await alertVendor(reqId);
   }
 
   async function assignEnquiry(enquiry: Enquiry, vendorId: string) {
     for (const line of enquiry.lines) {
-      await assignVendor(line.id, vendorId);
+      await assignVendor(line.id, vendorId, true);
+    }
+    if (vendorId === "none") return;
+    // One consolidated alert with every line item of the enquiry.
+    try {
+      const res = await sendGroupAlerts({ data: { requirementIds: enquiry.lines.map((l) => l.id) } });
+      if (!res.ok && res.error) {
+        toast.error(res.error);
+      } else {
+        const failed = res.results.filter((r) => r.status === "Failed");
+        if (failed.length === 0) toast.success("Full enquiry details sent to the vendor");
+        else
+          toast.warning(failed.map((f) => `${f.channel}: ${f.response.slice(0, 80)}`).join(" | "), {
+            duration: 8000,
+          });
+      }
+    } catch (err) {
+      console.error("[NOTIFY]", err);
+      toast.error("Could not send vendor alerts");
+    } finally {
+      void qc.invalidateQueries({ queryKey: ["requirements"] });
+      void qc.invalidateQueries({ queryKey: ["notification-log"] });
     }
   }
 
