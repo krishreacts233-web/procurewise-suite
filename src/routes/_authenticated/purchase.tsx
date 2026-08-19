@@ -38,7 +38,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { logAudit, notify } from "@/lib/audit";
 import { downloadTemplate, importRequirements, parseWorkbook } from "@/lib/upload";
-import { sendRequirementAlerts, type AlertChannel } from "@/lib/notify.functions";
+import { sendEnquiryAlerts, sendRequirementAlerts, type AlertChannel } from "@/lib/notify.functions";
 
 export const Route = createFileRoute("/_authenticated/purchase")({
   head: () => ({
