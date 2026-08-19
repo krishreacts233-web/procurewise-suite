@@ -226,7 +226,7 @@ function PurchasePage() {
     if (vendorId) await alertVendor(data.id);
   }
 
-  async function assignVendor(reqId: string, vendorId: string) {
+  async function assignVendor(reqId: string, vendorId: string, skipAlert = false) {
     const { error } = await supabase
       .from("purchase_requirements")
       .update({
