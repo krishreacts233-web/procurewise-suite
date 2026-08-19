@@ -123,3 +123,131 @@ export const sendRequirementAlerts = createServerFn({ method: "POST" })
 
     return { ok: results.some((r) => r.status === "Sent"), results };
   });
+
+/** Send one consolidated alert containing every line item of an enquiry. */
+export const sendEnquiryAlerts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { requirementIds: string[]; channels?: AlertChannel[] }) => input)
+  .handler(async ({ data, context }): Promise<{ ok: boolean; results: ChannelOutcome[]; error?: string }> => {
+    const { sendEmail, sendSms, sendWhatsApp } = await import("./notify.server");
+    const supabase = context.supabase;
+    const channels: AlertChannel[] = data.channels ?? ["email", "whatsapp", "sms"];
+
+    if (!data.requirementIds.length) return { ok: false, results: [], error: "No enquiry lines selected" };
+
+    const { data: rows, error } = await supabase
+      .from("purchase_requirements")
+      .select(
+        "id, requirement_no, quantity, unit, required_date, remarks, vendor_id, departments(code,name), items(item_code,item_name,specification), vendors(id,vendor_name,contact_person,email,mobile,whatsapp)",
+      )
+      .in("id", data.requirementIds);
+
+    if (error || !rows || rows.length === 0) {
+      return { ok: false, results: [], error: error?.message ?? "Enquiry not found" };
+    }
+
+    const vendor = rows[0]!.vendors as unknown as {
+      id: string;
+      vendor_name: string;
+      contact_person: string | null;
+      email: string | null;
+      mobile: string | null;
+      whatsapp: string | null;
+    } | null;
+    if (!vendor) return { ok: false, results: [], error: "No vendor assigned to this enquiry" };
+
+    const dept = rows[0]!.departments as unknown as { code: string; name: string } | null;
+    const ref = rows[0]!.requirement_no;
+    const subject = `New Purchase Requirement – ${ref}`;
+
+    const lines = rows.map((r) => {
+      const item = r.items as unknown as { item_code: string; item_name: string; specification: string | null } | null;
+      return {
+        code: item?.item_code ?? "-",
+        name: item?.item_name ?? "-",
+        spec: item?.specification ?? "-",
+        qty: `${r.quantity} ${r.unit}`,
+        date: r.required_date ?? "-",
+        remarks: r.remarks ?? "-",
+      };
+    });
+
+    const rowsHtml = lines
+      .map(
+        (l, i) =>
+          `<tr><td>${i + 1}</td><td>${l.code}</td><td>${l.name}</td><td>${l.spec}</td><td>${l.qty}</td><td>${l.date}</td><td>${l.remarks}</td></tr>`,
+      )
+      .join("");
+
+    const html = `<div style="font-family:Arial,sans-serif;color:#1f2937">
+      <h2 style="margin:0 0 12px">${subject}</h2>
+      <p>Dear ${vendor.contact_person || vendor.vendor_name},</p>
+      <p>You have been assigned a new purchase enquiry on easybidding. Full details are below.</p>
+      <p><b>Enquiry No:</b> ${ref}<br/><b>Department:</b> ${dept?.code ?? "-"} ${dept?.name ? `(${dept.name})` : ""}<br/><b>Total line items:</b> ${lines.length}</p>
+      <table cellpadding="6" border="1" style="border-collapse:collapse;font-size:13px">
+        <thead style="background:#f3f4f6">
+          <tr><th>#</th><th>Item code</th><th>Item</th><th>Specification</th><th>Quantity</th><th>Required date</th><th>Remarks</th></tr>
+        </thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+      <p>Please log in to easybidding and submit your quotation.</p>
+    </div>`;
+
+    const textLines = lines
+      .map((l, i) => `${i + 1}. ${l.code} — ${l.name} | Qty ${l.qty} | Required ${l.date}`)
+      .join("\n");
+    const whatsappBody = `*New Purchase Requirement – ${ref}*\nDepartment: ${dept?.code ?? "-"}\n\n${textLines}\n\nPlease submit your quotation on easybidding.`;
+    const smsBody = `easybidding: New enquiry ${ref} with ${lines.length} item(s). Please submit your quotation.`;
+
+    const results: ChannelOutcome[] = [];
+
+    for (const channel of channels) {
+      const recipient =
+        channel === "email"
+          ? vendor.email ?? ""
+          : channel === "whatsapp"
+            ? vendor.whatsapp || vendor.mobile || ""
+            : vendor.mobile || "";
+      const message = channel === "email" ? subject : channel === "whatsapp" ? whatsappBody : smsBody;
+
+      const outcome =
+        channel === "email"
+          ? await sendEmail(recipient, subject, html)
+          : channel === "whatsapp"
+            ? await sendWhatsApp(recipient, whatsappBody)
+            : await sendSms(recipient, smsBody);
+
+      const label =
+        outcome.status === "Failed" && outcome.response.startsWith("Provider not configured")
+          ? "Failed – Provider Not Configured"
+          : outcome.status;
+
+      results.push({ channel, status: outcome.status, recipient, response: outcome.response });
+
+      await supabase.from("notification_log").insert(
+        rows.map((r) => ({
+          requirement_id: r.id,
+          vendor_id: vendor.id,
+          channel,
+          recipient,
+          message,
+          status: label,
+          provider_response: outcome.response,
+          sent_at: outcome.status === "Sent" ? new Date().toISOString() : null,
+        })),
+      );
+
+      const patch =
+        channel === "email"
+          ? { email_status: label }
+          : channel === "whatsapp"
+            ? { whatsapp_status: label }
+            : { sms_status: label };
+      await supabase
+        .from("purchase_requirements")
+        .update(patch)
+        .in("id", rows.map((r) => r.id));
+    }
+
+    return { ok: results.some((r) => r.status === "Sent"), results };
+  });
