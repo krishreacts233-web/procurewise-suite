@@ -15,13 +15,17 @@ export const sendRequirementAlerts = createServerFn({ method: "POST" })
   .inputValidator((input: { requirementId: string; channels?: AlertChannel[] }) => input)
   .handler(async ({ data, context }): Promise<{ ok: boolean; results: ChannelOutcome[]; error?: string }> => {
     const { sendEmail, sendSms, sendWhatsApp } = await import("./notify.server");
+    const { loadVendorContact } = await import("./notify.server");
     const supabase = context.supabase;
     const channels: AlertChannel[] = data.channels ?? ["email", "whatsapp", "sms"];
+
+    const { data: isStaff } = await supabase.rpc("is_staff");
+    if (!isStaff) return { ok: false, results: [], error: "Not allowed" };
 
     const { data: req, error } = await supabase
       .from("purchase_requirements")
       .select(
-        "id, requirement_no, quantity, unit, required_date, remarks, vendor_id, departments(code,name), items(item_code,item_name,specification), vendors(id,vendor_name,contact_person,email,mobile,whatsapp)",
+        "id, requirement_no, quantity, unit, required_date, remarks, vendor_id, departments(code,name), items(item_code,item_name,specification)",
       )
       .eq("id", data.requirementId)
       .maybeSingle();
@@ -29,14 +33,7 @@ export const sendRequirementAlerts = createServerFn({ method: "POST" })
     if (error || !req) {
       return { ok: false, results: [], error: error?.message ?? "Requirement not found" };
     }
-    const vendor = req.vendors as unknown as {
-      id: string;
-      vendor_name: string;
-      contact_person: string | null;
-      email: string | null;
-      mobile: string | null;
-      whatsapp: string | null;
-    } | null;
+    const vendor = await loadVendorContact(req.vendor_id);
     if (!vendor) return { ok: false, results: [], error: "No vendor assigned to this enquiry" };
 
     const dept = req.departments as unknown as { code: string; name: string } | null;
