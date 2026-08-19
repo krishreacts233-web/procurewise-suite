@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/PageHeader";
 import { StatusPill } from "@/components/StatusPill";
@@ -25,7 +26,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { ExcelUpload } from "@/components/ExcelUpload";
 import { downloadVendorTemplate, importVendors } from "@/lib/upload";
-import { useVendors, type Vendor } from "@/lib/queries";
+import { listVendorDetails, type VendorDetail as Vendor } from "@/lib/vendors.functions";
 import { logAudit } from "@/lib/audit";
 import { useAuth } from "@/lib/auth";
 
@@ -58,7 +59,11 @@ const EMPTY = {
 
 function VendorsPage() {
   const { isSuperAdmin } = useAuth();
-  const { data = [] } = useVendors();
+  const loadVendors = useServerFn(listVendorDetails);
+  const { data = [] } = useQuery({
+    queryKey: ["vendors", "details"],
+    queryFn: () => loadVendors({}),
+  });
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState<Vendor | null>(null);
@@ -98,6 +103,7 @@ function VendorsPage() {
     setEdit(null);
     setForm(EMPTY);
     void qc.invalidateQueries({ queryKey: ["vendors"] });
+    void qc.invalidateQueries({ queryKey: ["vendors", "details"] });
   }
 
   async function linkUser(vendor: Vendor, userId: string) {
@@ -116,6 +122,7 @@ function VendorsPage() {
     }
     toast.success("Vendor login linked");
     void qc.invalidateQueries({ queryKey: ["vendors"] });
+    void qc.invalidateQueries({ queryKey: ["vendors", "details"] });
   }
 
   async function toggleStatus(v: Vendor) {
@@ -128,6 +135,7 @@ function VendorsPage() {
       return;
     }
     void qc.invalidateQueries({ queryKey: ["vendors"] });
+    void qc.invalidateQueries({ queryKey: ["vendors", "details"] });
   }
 
   return (
