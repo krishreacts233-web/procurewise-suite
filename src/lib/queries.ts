@@ -18,22 +18,15 @@ export interface Item {
   category: string | null;
   status: string;
 }
+/** Non-sensitive vendor fields readable by any staff account. */
 export interface Vendor {
   id: string;
   vendor_code: string;
   vendor_name: string;
-  contact_person: string | null;
-  mobile: string | null;
-  email: string | null;
-  address: string | null;
-  gst: string | null;
-  pan: string | null;
   scope_of_supply: string | null;
-  designation: string | null;
-  sales_manager: string | null;
   status: string;
   user_id: string | null;
-  whatsapp: string | null;
+  created_at?: string;
 }
 export interface Requirement {
   id: string;
