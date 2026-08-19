@@ -62,6 +62,7 @@ function VendorsPage() {
   const loadVendors = useServerFn(listVendorDetails);
   const { data = [] } = useQuery({
     queryKey: ["vendors", "details"],
+    enabled: isSuperAdmin,
     queryFn: () => loadVendors({}),
   });
   const qc = useQueryClient();
