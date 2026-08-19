@@ -142,11 +142,15 @@ export function useItems() {
   });
 }
 
+/** Vendor list without PII. Contact details are Super Admin only (see listVendorDetails). */
 export function useVendors() {
   return useQuery({
     queryKey: ["vendors"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("vendors").select("*").order("vendor_name");
+      const { data, error } = await supabase
+        .from("vendors")
+        .select("id, vendor_code, vendor_name, status, scope_of_supply, user_id, created_at")
+        .order("vendor_name");
       if (error) {
         console.error("[VENDOR]", error.message);
         throw error;
