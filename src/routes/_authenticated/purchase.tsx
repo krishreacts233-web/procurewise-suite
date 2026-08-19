@@ -91,6 +91,7 @@ function PurchasePage() {
   const { data: requirements = [] } = useRequirements();
   const { data: quotations = [] } = useQuotations();
   const sendAlerts = useServerFn(sendRequirementAlerts);
+  const sendGroupAlerts = useServerFn(sendEnquiryAlerts);
   const fileRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
