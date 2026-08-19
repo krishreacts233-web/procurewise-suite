@@ -18,22 +18,15 @@ export interface Item {
   category: string | null;
   status: string;
 }
+/** Non-sensitive vendor fields readable by any staff account. */
 export interface Vendor {
   id: string;
   vendor_code: string;
   vendor_name: string;
-  contact_person: string | null;
-  mobile: string | null;
-  email: string | null;
-  address: string | null;
-  gst: string | null;
-  pan: string | null;
   scope_of_supply: string | null;
-  designation: string | null;
-  sales_manager: string | null;
   status: string;
   user_id: string | null;
-  whatsapp: string | null;
+  created_at?: string;
 }
 export interface Requirement {
   id: string;
@@ -142,11 +135,15 @@ export function useItems() {
   });
 }
 
+/** Vendor list without PII. Contact details are Super Admin only (see listVendorDetails). */
 export function useVendors() {
   return useQuery({
     queryKey: ["vendors"],
     queryFn: async () => {
-      const { data, error } = await supabase.from("vendors").select("*").order("vendor_name");
+      const { data, error } = await supabase
+        .from("vendors")
+        .select("id, vendor_code, vendor_name, status, scope_of_supply, user_id, created_at")
+        .order("vendor_name");
       if (error) {
         console.error("[VENDOR]", error.message);
         throw error;

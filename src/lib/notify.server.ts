@@ -105,3 +105,31 @@ export async function sendSms(to: string | null, body: string): Promise<ChannelR
     "TWILIO_SMS_FROM",
   );
 }
+
+export type VendorContact = {
+  id: string;
+  vendor_name: string;
+  contact_person: string | null;
+  email: string | null;
+  mobile: string | null;
+  whatsapp: string | null;
+};
+
+/**
+ * Vendor contact details are PII and are not readable through the Data API by
+ * signed-in staff accounts. Callers MUST verify the caller is staff/admin first.
+ */
+export async function loadVendorContact(vendorId: string | null): Promise<VendorContact | null> {
+  if (!vendorId) return null;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
+    .from("vendors")
+    .select("id, vendor_name, contact_person, email, mobile, whatsapp")
+    .eq("id", vendorId)
+    .maybeSingle();
+  if (error) {
+    console.error("[NOTIFY] vendor lookup failed:", error.message);
+    return null;
+  }
+  return (data as VendorContact | null) ?? null;
+}
