@@ -213,13 +213,6 @@ export type Database = {
             foreignKeyName: "notification_log_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false
-            referencedRelation: "vendor_directory"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notification_log_vendor_id_fkey"
-            columns: ["vendor_id"]
-            isOneToOne: false
             referencedRelation: "vendors"
             referencedColumns: ["id"]
           },
@@ -359,13 +352,6 @@ export type Database = {
             foreignKeyName: "purchase_requirements_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false
-            referencedRelation: "vendor_directory"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "purchase_requirements_vendor_id_fkey"
-            columns: ["vendor_id"]
-            isOneToOne: false
             referencedRelation: "vendors"
             referencedColumns: ["id"]
           },
@@ -461,13 +447,6 @@ export type Database = {
             foreignKeyName: "quotations_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false
-            referencedRelation: "vendor_directory"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quotations_vendor_id_fkey"
-            columns: ["vendor_id"]
-            isOneToOne: false
             referencedRelation: "vendors"
             referencedColumns: ["id"]
           },
@@ -550,33 +529,7 @@ export type Database = {
       }
     }
     Views: {
-      vendor_directory: {
-        Row: {
-          created_at: string | null
-          id: string | null
-          status: string | null
-          user_id: string | null
-          vendor_code: string | null
-          vendor_name: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string | null
-          status?: string | null
-          user_id?: string | null
-          vendor_code?: string | null
-          vendor_name?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string | null
-          status?: string | null
-          user_id?: string | null
-          vendor_code?: string | null
-          vendor_name?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       has_role: {
